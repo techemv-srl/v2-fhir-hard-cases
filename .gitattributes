@@ -1,0 +1,7 @@
+# HL7 v2 messages use CR (\r) as the segment terminator, as on the wire.
+# Never convert their line endings, on checkout or on commit.
+*.hl7 -text
+
+# Original attachment binaries must stay byte-identical (their SHA-256 is recorded).
+cases/*/attachments/** -text
+*.pdf binary

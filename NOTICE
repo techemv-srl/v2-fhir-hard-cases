@@ -1,0 +1,9 @@
+v2-fhir-hard-cases
+Copyright 2026 TechEMV S.r.l. and contributors
+
+Case data under cases/ is licensed under the Creative Commons Attribution 4.0
+International license (CC-BY-4.0), see LICENSE-DATA. Code under scripts/ and
+other tooling, including schema/, is licensed under the Apache License 2.0, see LICENSE-CODE.
+
+HL7, FHIR and the FHIR flame logo are registered trademarks of Health Level
+Seven International. This project is not affiliated with or endorsed by HL7.
