@@ -148,6 +148,11 @@
     "contributed_by": {
       "type": "string",
       "minLength": 1
+    },
+    "notes": {
+      "description": "Optional free text about the case itself, e.g. corrections to a previously published version.",
+      "type": "string",
+      "minLength": 1
     }
   },
   "allOf": [

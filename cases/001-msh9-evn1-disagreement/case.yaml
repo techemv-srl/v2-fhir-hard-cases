@@ -2,14 +2,19 @@ id: 001-msh9-evn1-disagreement
 status: todo
 title: MSH-9 and EVN-1 disagree on the trigger event
 summary: >-
-  MSH-9 says A01, EVN-1 says A08, and the visit started four days before the
-  message (PV1-44 is 2026-09-25, MSH-7 is 2026-09-29). This is typical of an
-  engine remapping A08 to A01 for a receiver that only accepts admits. The
-  point of the case is whether the conversion report notices the disagreement.
+  MSH-9 carries A01 (ADT^A01^ADT_A01) while EVN-1 carries A08, and the visit
+  started four days before the message (PV1-44 is 2026-09-25, MSH-7 is
+  2026-09-29). This is typical of an engine remapping A08 to A01 for a receiver
+  that only accepts admits. The point of the case is whether the conversion
+  report notices the disagreement.
+notes: >-
+  Offsets corrected to +0930 (ACST, Adelaide). The version posted on
+  chat.fhir.org on 2026-10-06 used +1000 in error. The offset is not part of
+  what this case tests.
 
 v2_version: "2.5"
 message_type: ADT^A01^ADT_A01
-trigger_event: A01          # as declared in MSH-9.2; EVN-1 says A08
+trigger_event: A01          # from MSH-9.2, which is authoritative; EVN-1 carries A08
 hop: v2-to-enterprise
 transaction: ADT feed, no IHE profile claimed
 actors:
@@ -21,7 +26,7 @@ validation:
   fhir_version: "4.0.1"
   packages:
     - {name: hl7.fhir.r4.core, version: 4.0.1}
-  snomed_edition: "900000000000207008"   # TODO: confirm (International, or SNOMED CT-AU 32506021000036107)
+  snomed_edition: "900000000000207008"   # International; the message carries no SNOMED CT codes
   scope: bundle-and-entries
 
 accepted_answers: []        # TODO: answers to be written by the maintainers
@@ -29,4 +34,4 @@ declared_losses: []         # TODO: depends on the accepted answers
 attachments: []
 
 provenance: synthetic
-contributed_by: TechEMV     # TODO: confirm
+contributed_by: Marco Volpe (TechEMV)

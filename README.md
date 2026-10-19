@@ -15,8 +15,8 @@ Each case lives in its own folder, `cases/<NNN>-<short-slug>/`:
 - `case.yaml`: the manifest. It states the v2 version, the message type as in
   MSH-9, the trigger event, the hop, the transaction and actors, whether the
   message initiates a workflow, what a validation pass covers, the accepted
-  answers, the declared losses, the embedded attachments, and the provenance of
-  the data. The format is defined by [`schema/case.schema.json`](schema/case.schema.json).
+  answers, the declared losses, the embedded attachments, the provenance of the
+  data, and optional notes. The format is defined by [`schema/case.schema.json`](schema/case.schema.json).
 - `expected/`: one FHIR JSON Bundle per accepted answer.
 - `attachments/`: the original binaries of embedded attachments, with their
   SHA-256.
@@ -60,9 +60,9 @@ scripts/
   validate_cases.py     structural checks (does not run the FHIR validator)
   requirements.txt
 CONTRIBUTING.md
-DCO
-LICENSE-CODE            Apache-2.0, for scripts/ and other tooling
-LICENSE-DATA            CC-BY-4.0, for everything under cases/
+DCO                     Developer Certificate of Origin 1.1 (its own terms)
+LICENSE-CODE            Apache-2.0, for scripts/, schema/ and other tooling
+LICENSE-DATA            CC-BY-4.0, for cases/ and documentation
 NOTICE
 ```
 
@@ -86,9 +86,11 @@ by adding an accepted answer rather than replacing one.
 
 ## License
 
-Copyright 2026 TechEMV S.r.l. and contributors. Case data under `cases/` is
-licensed under CC-BY-4.0 ([LICENSE-DATA](LICENSE-DATA)); code under `scripts/`
-and other tooling is licensed under Apache-2.0 ([LICENSE-CODE](LICENSE-CODE)).
+Copyright 2026 TechEMV S.r.l. and contributors. Case data under `cases/` and
+the documentation (`.md` files) are licensed under CC-BY-4.0
+([LICENSE-DATA](LICENSE-DATA)); `scripts/`, `schema/` and other tooling are
+licensed under Apache-2.0 ([LICENSE-CODE](LICENSE-CODE)). The [DCO](DCO) text
+belongs to The Linux Foundation and is reproduced verbatim under its own terms.
 See [NOTICE](NOTICE).
 
 ---
