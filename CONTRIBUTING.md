@@ -21,8 +21,9 @@ submit the contribution under the licenses of this repository:
 git commit -s
 ```
 
-Case data under `cases/` is contributed under CC-BY-4.0 and code under
-`scripts/` and other tooling under Apache-2.0 (see [NOTICE](NOTICE)).
+Case data under `cases/` and documentation are contributed under CC-BY-4.0,
+and code under `scripts/`, `schema/` and other tooling under Apache-2.0 (see
+[NOTICE](NOTICE)).
 
 ## One case per pull request
 
