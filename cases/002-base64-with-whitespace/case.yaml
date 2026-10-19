@@ -1,0 +1,41 @@
+id: 002-base64-with-whitespace
+status: todo
+title: Base64 attachment with embedded whitespace
+summary: >-
+  ORU^R01 with a one-page PDF report embedded in OBX-5 (OBX-2 = ED, encoding
+  Base64). The Base64 text contains spaces at five points: two on 4-character
+  boundaries, two inside a 4-character group (one of them a double space), and
+  one immediately before the padding. A strict Base64 decoder rejects the value
+  as sent; implementations variously reject the message, strip the whitespace
+  before decoding, or copy the text verbatim into Attachment.data. A pass means
+  the attachment decodes to exactly the bytes of attachments/synthetic-report.pdf
+  (SHA-256 below).
+
+v2_version: "2.5.1"
+message_type: ORU^R01^ORU_R01
+trigger_event: R01
+hop: v2-to-enterprise
+transaction: ORU result feed with embedded report, no IHE profile claimed
+actors:
+  sender: LIS (SYNTHLAB)
+  receiver: GW (RCVFAC)
+initiates_workflow: false
+
+validation:
+  fhir_version: "4.0.1"
+  packages:
+    - {name: hl7.fhir.r4.core, version: 4.0.1}
+  snomed_edition: "900000000000207008"
+  scope: bundle-and-entries
+
+accepted_answers: []        # TODO: answers to be written by the maintainers
+declared_losses: []         # TODO: depends on the accepted answers
+attachments:
+  - segment_field: OBX-5
+    occurrence: 1
+    mime: application/pdf
+    sha256: 8beb336ef5bf4ea92a3dd641f23ae2884056f513fdc9013457ace0d798f19815
+    file: attachments/synthetic-report.pdf
+
+provenance: synthetic
+contributed_by: TechEMV     # TODO: confirm

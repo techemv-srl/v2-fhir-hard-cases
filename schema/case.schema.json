@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/techemv-srl/v2-fhir-hard-cases/schema/case.schema.json",
+  "title": "HL7 v2 to FHIR hard case manifest (case.yaml)",
+  "description": "Manifest of one case under cases/<NNN>-<short-slug>/. A case with status 'todo' may omit most fields and may have no accepted answers; a case with status 'ready' must be complete.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "status", "title", "contributed_by"],
+  "properties": {
+    "id": {
+      "description": "Must equal the case folder name: a three-digit number and a short slug.",
+      "type": "string",
+      "pattern": "^[0-9]{3}-[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "status": {
+      "description": "'todo': work in progress, accepted_answers may be empty and message.hl7 may be missing. 'ready': complete.",
+      "enum": ["todo", "ready"]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "description": "What the case contains and why it is hard.",
+      "type": "string",
+      "minLength": 1
+    },
+    "v2_version": {
+      "description": "HL7 v2 version as in MSH-12, e.g. '2.5.1'. Quote it in YAML.",
+      "type": "string",
+      "pattern": "^2\\.[0-9]+(\\.[0-9]+)?$"
+    },
+    "message_type": {
+      "description": "MSH-9 exactly as sent, e.g. 'ADT^A01^ADT_A01'.",
+      "type": "string",
+      "pattern": "^[A-Z0-9]{3}(\\^[A-Z0-9]{3}(\\^[A-Z0-9_]+)?)?$"
+    },
+    "trigger_event": {
+      "description": "Trigger event as declared in MSH-9.2. If other fields disagree (e.g. EVN-1), say so in the summary.",
+      "type": "string",
+      "pattern": "^[A-Z0-9]{3}$"
+    },
+    "hop": {
+      "description": "'v2-to-enterprise' should be lossless and gets a strict diff. 'enterprise-to-repository' is lossy by design.",
+      "enum": ["v2-to-enterprise", "enterprise-to-repository"]
+    },
+    "transaction": {
+      "description": "Free text, e.g. 'LAB-1'.",
+      "type": "string",
+      "minLength": 1
+    },
+    "actors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sender", "receiver"],
+      "properties": {
+        "sender": {"type": "string", "minLength": 1},
+        "receiver": {"type": "string", "minLength": 1}
+      }
+    },
+    "initiates_workflow": {
+      "description": "Declared by the case, not inferred: whether the message initiates a workflow (e.g. a Task).",
+      "type": "boolean"
+    },
+    "validation": {
+      "description": "What a pass covers. Two tools can both say 'pass' after validating different things.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fhir_version", "packages", "snomed_edition", "scope"],
+      "properties": {
+        "fhir_version": {"const": "4.0.1"},
+        "packages": {
+          "description": "Pinned package set. Exact versions only, never 'latest', 'current' or ranges.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "version"],
+            "properties": {
+              "name": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+              "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?$"}
+            }
+          }
+        },
+        "snomed_edition": {
+          "description": "SNOMED CT edition module id, e.g. '900000000000207008' (International), or an edition/version URI such as 'http://snomed.info/sct/900000000000207008/version/20250101'. Quote it in YAML.",
+          "type": "string",
+          "pattern": "^([0-9]{6,18}|http://snomed\\.info/sct/[0-9]{6,18}(/version/[0-9]{8})?)$"
+        },
+        "scope": {
+          "description": "What was validated. 'bundle-and-entries': the Bundle including all its entries.",
+          "enum": ["bundle-and-entries"]
+        }
+      }
+    },
+    "accepted_answers": {
+      "description": "One entry per accepted answer. More than one is normal; each states its rationale and the exchange pattern it serves.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "rationale", "exchange_pattern"],
+        "properties": {
+          "file": {"type": "string", "pattern": "^expected/[A-Za-z0-9._-]+\\.json$"},
+          "rationale": {"type": "string", "minLength": 1},
+          "exchange_pattern": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "declared_losses": {
+      "description": "Information the conversion is expected to drop, and why. An empty list states that nothing is lost.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "reason"],
+        "properties": {
+          "source": {"description": "e.g. 'EVN-1', or a FHIR path for the enterprise-to-repository hop.", "type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "attachments": {
+      "description": "Embedded attachments. The original binary is stored under attachments/ and its SHA-256 is recorded here.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["segment_field", "mime", "sha256", "file"],
+        "properties": {
+          "segment_field": {"description": "Where the attachment is embedded, e.g. 'OBX-5'.", "type": "string", "pattern": "^[A-Z][A-Z0-9]{2}-[0-9]+$"},
+          "occurrence": {"description": "1-based occurrence of that segment in the message. Default 1.", "type": "integer", "minimum": 1},
+          "mime": {"type": "string", "pattern": "^[a-z]+/[A-Za-z0-9.+-]+$"},
+          "sha256": {"description": "Lowercase hex SHA-256 of the original bytes.", "type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "file": {"type": "string", "pattern": "^attachments/[A-Za-z0-9._-]+$"}
+        }
+      }
+    },
+    "provenance": {
+      "enum": ["synthetic", "scrubbed"]
+    },
+    "scrubbing_method": {
+      "description": "Required when provenance is 'scrubbed': how identifying data was removed or replaced.",
+      "type": "string",
+      "minLength": 1
+    },
+    "contributed_by": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "ready"}}, "required": ["status"]},
+      "then": {
+        "required": [
+          "summary", "v2_version", "message_type", "trigger_event", "hop",
+          "transaction", "actors", "initiates_workflow", "validation",
+          "accepted_answers", "declared_losses", "attachments", "provenance"
+        ],
+        "properties": {"accepted_answers": {"minItems": 1}}
+      }
+    },
+    {
+      "if": {"properties": {"provenance": {"const": "scrubbed"}}, "required": ["provenance"]},
+      "then": {"required": ["scrubbing_method"]}
+    }
+  ]
+}
