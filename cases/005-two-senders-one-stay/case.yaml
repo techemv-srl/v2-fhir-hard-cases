@@ -1,0 +1,107 @@
+id: 005-two-senders-one-stay
+status: todo
+title: One stay admitted by two senders under different visit numbers
+summary: >-
+  One inpatient stay reaches the receiver from two senders. The hospital PAS
+  sends the A01 with visit number VN3001. A regional relay sends an A01 for
+  the same patient, ward and admit time (PV1-44 08:05) under its own visit
+  number, E77812. Two days later the PAS sends the A03; the relay sends no
+  discharge. Each message converts and validates on its own; the error is only
+  visible in the end state. A converter that keys Encounters on the visit
+  number alone creates two Encounters for one stay, counts two admissions, and
+  after the A03 leaves the relay's Encounter in-progress with no message left
+  that could close it.
+notes: >-
+  Second multi-message case, same shape as 004. It brings `linked_identifiers`
+  back into the schema to say that the second sender's visit number must
+  resolve to the same Encounter; the reconciliation rule states which
+  identifiers get linked and which do not. Only one accepted end state is
+  declared. A second one, two Encounters recorded as the same stay and both
+  closed by the A03, may be defensible, but the format has no way yet to say
+  that two Encounters are linked; that is a question for review, not something
+  this case settles.
+  Both A01s carry the same PV1-44, so the size of the matching window is not
+  exercised here; a variant with admit times a few minutes apart would test it.
+
+v2_version: "2.5"
+hop: v2-to-enterprise
+transaction: ADT feed, no IHE profile claimed
+actors:
+  sender: PAS (NORTHSIDE) and RELAY (REGIONHIE)
+  receiver: GW (RCVFAC)
+initiates_workflow: false
+
+messages:                       # listed in arrival order
+  - file: message-1.hl7
+    arrival_order: 1
+    message_type: ADT^A01^ADT_A01
+    trigger_event: A01
+  - file: message-2.hl7
+    arrival_order: 2
+    message_type: ADT^A01^ADT_A01
+    trigger_event: A01
+  - file: message-3.hl7
+    arrival_order: 3
+    message_type: ADT^A03^ADT_A03
+    trigger_event: A03
+
+accepted_end_states:
+  - name: merge-on-same-stay
+    reconciliation_rule: >-
+      Same-stay match: two admits describe the same stay when they carry the
+      same patient identifier (PID-3 value and assigning authority), the same
+      facility in PV1-3.4, the same patient class, and PV1-44 values within 60
+      minutes of each other, whatever their arrival order. Visit numbers
+      issued by different assigning authorities are never compared with each
+      other. Identifier linking: the Encounter keeps as its identifier the
+      visit number of the first admit received. Each later admit that passes
+      the same-stay match creates nothing and adds its own visit number
+      (PV1-19 value, assigning authority and type) as a linked identifier.
+      Nothing else is linked: not the patient identifier, and not the visit
+      number of any message that fails the match. A later message that names
+      the identifier or any linked identifier resolves to this Encounter, so a
+      discharge from either sender closes it.
+    rationale: >-
+      One stay is one Encounter, so admissions are counted once and a
+      discharge from either sender closes the stay. Cost: the match rests on
+      patient, facility, class and admit time, so two real stays that share
+      all four within the window would be merged.
+    exchange_pattern: receiver matches admits across senders before creating an Encounter
+    states:
+      - after_message: 1
+        encounters:
+          - identifier: {assigner: NORTHSIDE, type: VN, value: VN3001}
+            status: in-progress
+            class: IMP
+            period_start: "2026-11-09T08:05:00-05:00"   # PV1-44
+      - after_message: 2
+        encounters:
+          - identifier: {assigner: NORTHSIDE, type: VN, value: VN3001}
+            linked_identifiers:
+              - {assigner: REGIONHIE, type: VN, value: E77812}
+            status: in-progress
+            class: IMP
+            period_start: "2026-11-09T08:05:00-05:00"
+      - after_message: 3
+        encounters:
+          - identifier: {assigner: NORTHSIDE, type: VN, value: VN3001}
+            linked_identifiers:
+              - {assigner: REGIONHIE, type: VN, value: E77812}
+            status: finished
+            class: IMP
+            period_start: "2026-11-09T08:05:00-05:00"
+            period_end: "2026-11-11T14:00:00-05:00"     # PV1-45 of the A03
+
+validation:
+  fhir_version: "4.0.1"
+  packages:
+    - {name: hl7.fhir.r4.core, version: 4.0.1}
+  snomed_edition: "900000000000207008"   # International; the messages carry no SNOMED CT codes
+  scope: end-states
+
+accepted_answers: []            # per-message Bundles are optional for this case
+declared_losses: []
+attachments: []
+
+provenance: synthetic
+contributed_by: Tarun Raj Vutukuru

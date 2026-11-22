@@ -221,6 +221,11 @@
       "required": ["identifier", "status"],
       "properties": {
         "identifier": {"$ref": "#/$defs/visit_identifier"},
+        "linked_identifiers": {
+          "description": "Other visit identifiers, e.g. from a second sender, that must resolve to this same Encounter. The reconciliation rule states which identifiers get linked.",
+          "type": "array",
+          "items": {"$ref": "#/$defs/visit_identifier"}
+        },
         "status": {"enum": ["planned", "arrived", "triaged", "in-progress", "onleave", "finished", "cancelled", "entered-in-error", "unknown"]},
         "class": {"description": "v3 ActCode, e.g. 'IMP'.", "type": "string", "minLength": 1},
         "period_start": {"description": "FHIR dateTime with offset. Quote it in YAML.", "type": "string", "minLength": 1},
